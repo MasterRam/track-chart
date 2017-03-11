@@ -2,6 +2,7 @@
 
 A Trackchart is a visual representation of the sequence of stages and decisions needed to perform a process. Each step in the sequence may contains child stages and each step is noted within a circle shape. Steps are linked by connecting lines.
 
+![Alt text](/image/simpleTracking.png?raw=true "Track Chart Sample")
 ## Installation
 
 To install this library, run:
@@ -37,7 +38,14 @@ import { TrackChartModule } from 'track-chart';
     BrowserModule,
 
     // Specify your library as an import
-    TrackChartModule
+    TrackChartModule.forRoot({
+      FillColor: "rgb(68, 64, 60)",
+      TextColor: "#ffffff",
+      TitleColor: "#356066",
+      UnFillColor: '#dddddd',
+      UnFillNodeColor: "#ffffff",
+      Font: "Times"
+    }),
     LibraryModule
   ],
   providers: [],
@@ -55,6 +63,53 @@ Once your library is imported, you can use its components, directives and pipes 
 </h1>
 <trackChartComponent [model]="chartModel"></trackChartComponent>
 ```
+chartModel is a public variable of AppComponent of type "TrackChart" with property as below.
+
+```typescript
+
+import { TrackChart, DisplayType, Node, NodeType } from '../../../../index';
+
+export const SimpleModel = {
+    StartNode: true,
+    EndNode: true,
+    CurrentState: "End",
+    ChildState: "",
+    Nodes: [
+        {
+            Name: "One",
+            Title: "One",
+            Type: NodeType.Start,
+            Childeren: [
+                {
+                    Title: "Child",
+                    Name: "Child",
+                    Type: NodeType.Child,
+                    Childeren: [],
+                    Display: DisplayType.Text,
+                    ImageURL: "",
+                    DisplayText: "(a)",
+                } as Node
+            ],
+            Display: DisplayType.Text,
+            ImageURL: "",
+            DisplayText: "1",
+        } as Node,
+        {
+            Name: "End",
+            Title: "End",
+            Type: NodeType.End,
+            Childeren: [],
+            Display: DisplayType.Text,
+            ImageURL: "",
+            DisplayText: "2",
+        } as Node
+    ] as Node[],
+    Title: "#30012313 - Loan Process",
+    ShowTitle: true
+} as TrackChart;
+
+```
+
 
 ## Development
 

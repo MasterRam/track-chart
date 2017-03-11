@@ -49,6 +49,7 @@ export class Node {
   Link: string;
   Type: NodeType;
   Childeren: Node[];
+  Description: string;
   Display: DisplayType;
   ImageURL: string;
   DisplayText: string;
