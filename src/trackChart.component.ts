@@ -9,7 +9,7 @@ import { TrackChart, Node, DisplayType } from './trackChart';
     Your browser does not support the canvas element.
   </canvas>
 </h1>
-<div class='tooltip' id='tooltip' [ngStyle]='{ 'top': style.top,'left': style.left,'transform':style.transform,'display':style.display}'>
+<div class='tooltip' id='tooltip' [ngStyle]="{ 'top': style.top,'left': style.left,'transform':style.transform,'display':style.display}">
   <p class='tooltip-title'>
     <img [hidden]='!style.isImage' src='{{style.icon}}' style='width:20px;height: 20px;' />
     <b [hidden]='style.isImage'>{{style.icon}}</b>
