@@ -13,13 +13,8 @@ $ npm install track-chart --save
 
 ## Consuming your library
 
-Once you have published your library to npm, you can import your library in any Angular application by running:
-
-```bash
-$ npm install track-chart
-```
-
-and then from your Angular `AppModule`:
+Once you have installed the library, you can import Track-Chart library in your application 
+through your Angular `AppModule`:
 
 ```typescript
 import { BrowserModule } from '@angular/platform-browser';
@@ -54,7 +49,7 @@ import { TrackChartModule } from 'track-chart';
 export class AppModule { }
 ```
 
-Once your library is imported, you can use its components, directives and pipes in your Angular application:
+Once library is imported, you can use its components, directives and pipes in your Angular application:
 
 ```xml
 <!-- You can now use your library component in app.component.html -->
@@ -67,7 +62,7 @@ chartModel is a public variable of AppComponent of type "TrackChart" with proper
 
 ```typescript
 
-import { TrackChart, DisplayType, Node, NodeType } from '../../../../index';
+import { TrackChart, DisplayType, Node, NodeType } from 'track-project';
 
 export const SimpleModel = {
     StartNode: true,
