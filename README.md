@@ -1,5 +1,7 @@
 # track-chart
 
+A Trackchart is a visual representation of the sequence of stages and decisions needed to perform a process. Each step in the sequence may contains child stages and each step is noted within a circle shape. Steps are linked by connecting lines.
+
 ## Installation
 
 To install this library, run:
