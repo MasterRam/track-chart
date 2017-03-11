@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, ViewChild, ElementRef, HostListener } from '@angular/core';
-import { TrackChart, Node, DisplayType } from './trackChart';
+import { TrackChart, Node, NodeType, DisplayType } from './trackChart';
 
 @Component({
   selector: 'track-chart',
@@ -11,8 +11,8 @@ import { TrackChart, Node, DisplayType } from './trackChart';
 </h1>
 <div class='tooltip' id='tooltip' [ngStyle]="{ 'top': style.top,'left': style.left,'transform':style.transform,'display':style.display}">
   <p class='tooltip-title'>
-    <img [hidden]='!style.isImage' src='{{style.icon}}' style='width:20px;height: 20px;' />
-    <b [hidden]='style.isImage'>{{style.icon}}</b>
+    <img *ngIf='style.isImage' src='{{style.icon}}' style='width:20px;height: 20px;' />
+    <b *ngIf='!style.isImage'>{{style.icon}}</b>
     <b>{{style.message}}</b>
   </p>
   <p class='tooltip-desc'>
@@ -66,7 +66,7 @@ export class TrackChartComponent implements OnInit {
     let completedPercentage = 50;
     let color = '#258e9b';
     let borderColor = '#00BCD4';
-    this.drawChart('myCanvas', this.model, totalNode, completedPercentage, color, borderColor);
+    this.drawChart('myCanvas', this.model, this.model.Nodes.length, completedPercentage, color, borderColor);
 
   }
   @HostListener('mousemove', ['$event'])
@@ -136,7 +136,7 @@ export class TrackChartComponent implements OnInit {
     ctx.arc(x, y, 12, 0, 360, false);
     ctx.fill();
   }
-  drawChildChart(ctx: CanvasRenderingContext2D, nodes: Node[], totalNode: number, x1: number, y: number, x2: number): number {
+  drawChildChart(ctx: CanvasRenderingContext2D, nodes: Node[], totalNode: number, x1: number, y: number, x2: number, isLastNode: boolean): number {
     let node = totalNode + 1;
     let width = x2 - x1;
     let index = node, templength = (width) / node, nodelength = x2 + templength;
@@ -147,7 +147,10 @@ export class TrackChartComponent implements OnInit {
       }
     }
     ctx.closePath();
-    return nodelength - templength / 2;
+    if (isLastNode)
+      return nodelength - templength / 2;
+    else
+      return nodelength - templength * 2;
   }
   drawChildChartText(ctx: CanvasRenderingContext2D, nodes: Node[], totalNode: number, x1: number, y: number, x2: number) {
     let node = totalNode + 1;
@@ -208,22 +211,14 @@ export class TrackChartComponent implements OnInit {
       }
     }
 
-    let grd = ctx.createLinearGradient(50, 0, width - 50, 10);
-    grd.addColorStop(completed, color);
-    grd.addColorStop(completed, '#dddddd');
-    grd.addColorStop(0, color);
-
-    //  ctx.fillStyle = grd;
-    //  ctx.rect(40, 30, (width - 100), 10);
     ctx.fillStyle = '#dddddd'; //  color;
     ctx.rect(40, 30, (width - 100), 10);
-
     ctx.fill();
     index = node;
     templength = (width - 100) / node;
     nodelength = 50;
     InActiveFound = false;
-    // nodes length-1
+
     for (index = 0; index <= model.Nodes.length - 1; index++ , nodelength = nodelength + (templength)) {
       let element = model.Nodes[index];
       let tempDisplayText = (element.Display === DisplayType.Image ? element.ImageURL : element.DisplayText);
@@ -238,13 +233,6 @@ export class TrackChartComponent implements OnInit {
 
 
     ctx.beginPath();
-    //  let grd = ctx.createLinearGradient(50, 0, width - 50, 0);
-    //  grd.addColorStop(completed, borderColor);
-    //  grd.addColorStop(completed, '#dddddd');
-    //  grd.addColorStop(0, borderColor);
-    //  ctx.fillStyle = borderColor;
-    //  ctx.rect(40, 32, (width - (width * (1 - completed))), 6);
-    //  ctx.fill();
     ctx.fillStyle = borderColor;
     index = node;
     templength = (width - 100) / node;
@@ -257,31 +245,46 @@ export class TrackChartComponent implements OnInit {
         this.drawNode(ctx, element, nodelength, 35);
 
         let tempChilderen: Node[] = new Array();
-        if (element.Childeren.filter(t => t.Name === this.model.ChildState).length > 0) {
-          for (let childIndex = 0; childIndex < element.Childeren.length; childIndex++) {
-            let childElement = element.Childeren[childIndex];
-            tempChilderen.push(childElement);
-            if (childElement.Name === this.model.ChildState) {
-
-              break;
-            }
+        if (this.model.CurrentState === element.Name) {
+          if (this.model.ChildState === "" || this.model.ChildState === null || this.model.ChildState === undefined) {
+            childNodelength = nodelength;
+            break;
           }
-          // alert(childElement.Name + ' ' + tempChilderen.length);
-          childNodelength = this.drawChildChart(ctx, tempChilderen, element.Childeren.length, nodelength - (templength), 35, nodelength);
+          if (element.Childeren.filter(t => t.Name === this.model.ChildState).length > 0) {
+            for (let childIndex = 0; childIndex < element.Childeren.length; childIndex++) {
+              let childElement = element.Childeren[childIndex];
+              tempChilderen.push(childElement);
+              if (childElement.Name === this.model.ChildState) {
+                break;
+              }
+            }
+            //       alert(element.Name + ' ' + tempChilderen.length);
+            childNodelength = this.drawChildChart(ctx, tempChilderen, element.Childeren.length, nodelength - (templength), 35, nodelength, element.Type === NodeType.End);
+          }
+        } else {
+          childNodelength = this.drawChildChart(ctx, element.Childeren, element.Childeren.length, nodelength - (templength), 35, nodelength, element.Type === NodeType.End);
         }
 
       }
-      if (this.model.CurrentState === element.Name && !InActiveFound) {
-        InActiveFound = true;
-        if (childNodelength === 0) {
-          childNodelength = 0;
+
+      if (this.model.CurrentState === element.Name) {
+        if (element.Type == NodeType.End) {
+          childNodelength = width - 50;
         }
-        break;
+        if (!InActiveFound) {
+          InActiveFound = true;
+          if (childNodelength === 0) {
+            childNodelength = 0;
+          }
+          break;
+        }
+
       }
 
     }
+    console.log(childNodelength);
     ctx.beginPath();
-    ctx.rect(50, 32, childNodelength / 2, 6);
+    ctx.rect(50, 32, childNodelength - 50, 6);
     ctx.fillStyle = borderColor;
     ctx.fill();
     ctx.beginPath();
@@ -310,15 +313,17 @@ export class TrackChartComponent implements OnInit {
     InActiveFound = false;
     for (index = 0; index <= node; index++ , nodelength = nodelength + (templength)) {
       let element = model.Nodes[index];
-      if (this.model.CurrentState === element.Name && !InActiveFound) {
-        InActiveFound = true;
-        continue;
-      }
-      if (InActiveFound) {
-        ctx.beginPath();
-        ctx.fillStyle = 'white';
-        this.drawNode(ctx, element, nodelength, 35);
-        this.drawNodeText(ctx, element.DisplayText, nodelength, 35, '#dddddd');
+      if (element != undefined) {
+        if (this.model.CurrentState === element.Name && !InActiveFound) {
+          InActiveFound = true;
+          continue;
+        }
+        if (InActiveFound) {
+          ctx.beginPath();
+          ctx.fillStyle = 'white';
+          this.drawNode(ctx, element, nodelength, 35);
+          this.drawNodeText(ctx, element.DisplayText, nodelength, 35, '#dddddd');
+        }
       }
       //  this.drawChildChart(ctx, element.Childeren, element.Childeren.length, nodelength - (templength), 35, nodelength);
 
