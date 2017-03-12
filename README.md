@@ -99,7 +99,7 @@ export const SimpleModel = {
             DisplayText: "2",
         } as Node
     ] as Node[],
-    Title: "#30012313 - Loan Process",
+    Title: "Simple - Tracking",
     ShowTitle: true
 } as TrackChart;
 
