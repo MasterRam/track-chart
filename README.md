@@ -23,7 +23,7 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 
 // Import your library
-import { TrackChartModule } from 'track-chart';
+import { TrackChartModule,TrackChartConfig } from 'track-chart';
 
 @NgModule({
   declarations: [
@@ -40,7 +40,7 @@ import { TrackChartModule } from 'track-chart';
       UnFillColor: '#dddddd',
       UnFillNodeColor: "#ffffff",
       Font: "Times"
-    }),
+    } as TrackChartConfig),
     LibraryModule
   ],
   providers: [],
@@ -99,7 +99,7 @@ export const SimpleModel = {
             DisplayText: "2",
         } as Node
     ] as Node[],
-    Title: "#30012313 - Loan Process",
+    Title: "Simple - Tracking",
     ShowTitle: true
 } as TrackChart;
 
