@@ -33,14 +33,7 @@ import { TrackChartModule,TrackChartConfig } from 'track-chart';
     BrowserModule,
 
     // Specify your library as an import
-    TrackChartModule.forRoot({
-      FillColor: "rgb(68, 64, 60)",
-      TextColor: "#ffffff",
-      TitleColor: "#356066",
-      UnFillColor: '#dddddd',
-      UnFillNodeColor: "#ffffff",
-      Font: "Times"
-    } as TrackChartConfig),
+    TrackChartModule,
     LibraryModule
   ],
   providers: [],
