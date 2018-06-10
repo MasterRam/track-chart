@@ -1,6 +1,14 @@
 import { Component, OnInit, Input, ViewChild, ElementRef, HostListener } from '@angular/core';
-import { TrackChart, Node, NodeType, DisplayType } from './trackChart';
-import { TrackChartConfig } from './trackChart.config';
+import { TrackChart, Node, NodeType, DisplayType, TrackChartConfig } from './trackChart';
+
+const DefaultConfig = new TrackChartConfig();
+DefaultConfig.FillColor = 'rgba(40, 59, 65, 0.71)';
+DefaultConfig.TextColor = '#ffffff';
+DefaultConfig.TitleColor = '#356066';
+DefaultConfig.UnFillColor = '#dddddd';
+DefaultConfig.UnFillNodeColor = '#ffffff';
+DefaultConfig.Font = 'Times';
+
 
 @Component({
   selector: 'track-chart',
@@ -46,7 +54,7 @@ import { TrackChartConfig } from './trackChart.config';
 })
 
 export class TrackChartComponent implements OnInit {
-  private static config: TrackChartConfig = new TrackChartConfig();
+  config: TrackChartConfig = DefaultConfig;
   @ViewChild('canvas')
   canvasEle: ElementRef;
   @Input()
@@ -55,10 +63,10 @@ export class TrackChartComponent implements OnInit {
   style: any = { top: 0, left: 0, transform: 'translateY(0px) translateX(0px)' };
   hoverLink: string;
   canvas: HTMLCanvasElement;
-  titleColor = TrackChartComponent.config.TitleColor;
-  textColor = TrackChartComponent.config.TextColor;
+  titleColor = this.config.TitleColor;
+  textColor = this.config.TextColor;
   toolTips: any[] = new Array();
-  static setConfig(configParam: TrackChartConfig) {
+  setConfig(configParam: TrackChartConfig) {
     this.config = configParam;
   }
 
@@ -68,8 +76,9 @@ export class TrackChartComponent implements OnInit {
 
   ngOnInit(): void {
     let completedPercentage = 50;
-    let color = TrackChartComponent.config.UnFillColor;
-    let borderColor = TrackChartComponent.config.FillColor;
+    this.config = this.model.Config;
+    let color = this.config.UnFillColor;
+    let borderColor = this.config.FillColor;
     this.drawChart('myCanvas', this.model, this.model.Nodes.length, completedPercentage, color, borderColor);
 
   }
@@ -232,12 +241,13 @@ export class TrackChartComponent implements OnInit {
     for (index = 0; index <= model.Nodes.length - 1; index++ , nodelength = nodelength + (templength)) {
       let element = model.Nodes[index];
       let tempDisplayText = (element.Display === DisplayType.Image ? element.ImageURL : element.DisplayText);
-      this.addtoolTip(nodelength - 18, 35 + (19 * 3), 18 * 2, 18 * 2, element.Title, element.Description, element.Display, tempDisplayText);
+      this.addtoolTip(nodelength - 18, 35 -10, 18 * 2, 18 * 2, element.Title, element.Description, element.Display, tempDisplayText);
       this.drawNodeBorder(ctx, element, nodelength, 35);
       if (element.Childeren.length > 0) {
         this.drawChildChartBorder(ctx, element.Childeren, element.Childeren.length, nodelength - (templength), 35, nodelength);
       }
     }
+
 
 
 
@@ -248,55 +258,58 @@ export class TrackChartComponent implements OnInit {
     templength = (width - 100) / node;
     nodelength = 50;
     let childNodelength = 0;
+    if (this.model.CurrentState != undefined && this.model.CurrentState != null && this.model.CurrentState != '') {
+      for (index = 0; index <= node; index++ , nodelength = nodelength + (templength)) {
+        let element = model.Nodes[index];
+        if (!InActiveFound) {
+          this.drawNode(ctx, element, nodelength, 35);
 
-    for (index = 0; index <= node; index++ , nodelength = nodelength + (templength)) {
-      let element = model.Nodes[index];
-      if (!InActiveFound) {
-        this.drawNode(ctx, element, nodelength, 35);
+          let tempChilderen: Node[] = new Array();
+          if (this.model.CurrentState === element.Name) {
+            if (this.model.ChildState === '' || this.model.ChildState === null || this.model.ChildState === undefined) {
+              childNodelength = nodelength;
+              break;
+            }
+            if (element.Childeren.filter(t => t.Name === this.model.ChildState).length > 0) {
+              for (let childIndex = 0; childIndex < element.Childeren.length; childIndex++) {
+                let childElement = element.Childeren[childIndex];
+                tempChilderen.push(childElement);
+                if (childElement.Name === this.model.ChildState) {
+                  break;
+                }
+              }
+              //       alert(element.Name + ' ' + tempChilderen.length);
+              childNodelength = this.drawChildChart(ctx, tempChilderen, element.Childeren.length, nodelength - (templength), 35, nodelength, element.Type === NodeType.End);
+            }
+          } else {
+            childNodelength = this.drawChildChart(ctx, element.Childeren, element.Childeren.length, nodelength - (templength), 35, nodelength, element.Type === NodeType.End);
+          }
 
-        let tempChilderen: Node[] = new Array();
+        }
+
+
         if (this.model.CurrentState === element.Name) {
-          if (this.model.ChildState === '' || this.model.ChildState === null || this.model.ChildState === undefined) {
-            childNodelength = nodelength;
+          if (element.Type === NodeType.End) {
+            childNodelength = width - 50;
+          }
+          if (!InActiveFound) {
+            InActiveFound = true;
+            if (childNodelength === 0) {
+              childNodelength = 0;
+            }
             break;
           }
-          if (element.Childeren.filter(t => t.Name === this.model.ChildState).length > 0) {
-            for (let childIndex = 0; childIndex < element.Childeren.length; childIndex++) {
-              let childElement = element.Childeren[childIndex];
-              tempChilderen.push(childElement);
-              if (childElement.Name === this.model.ChildState) {
-                break;
-              }
-            }
-            //       alert(element.Name + ' ' + tempChilderen.length);
-            childNodelength = this.drawChildChart(ctx, tempChilderen, element.Childeren.length, nodelength - (templength), 35, nodelength, element.Type === NodeType.End);
-          }
-        } else {
-          childNodelength = this.drawChildChart(ctx, element.Childeren, element.Childeren.length, nodelength - (templength), 35, nodelength, element.Type === NodeType.End);
+
         }
 
       }
-
-      if (this.model.CurrentState === element.Name) {
-        if (element.Type === NodeType.End) {
-          childNodelength = width - 50;
-        }
-        if (!InActiveFound) {
-          InActiveFound = true;
-          if (childNodelength === 0) {
-            childNodelength = 0;
-          }
-          break;
-        }
-
-      }
-
-    }
+    
     console.log(childNodelength);
     ctx.beginPath();
     ctx.rect(50, 32, childNodelength - 50, 6);
     ctx.fillStyle = borderColor;
     ctx.fill();
+    }
     ctx.beginPath();
 
 
@@ -316,7 +329,7 @@ export class TrackChartComponent implements OnInit {
 
     /**Draw Inactive Node BG  */
     //  ctx.beginPath();
-    ctx.fillStyle = TrackChartComponent.config.UnFillNodeColor;
+    ctx.fillStyle = this.config.UnFillNodeColor;
     index = node;
     templength = (width - 100) / node;
     nodelength = 50;
@@ -331,7 +344,7 @@ export class TrackChartComponent implements OnInit {
 
         if (InActiveFound) {
           ctx.beginPath();
-          ctx.fillStyle = TrackChartComponent.config.UnFillNodeColor;
+          ctx.fillStyle = this.config.UnFillNodeColor;
           this.drawNode(ctx, element, nodelength, 35);
           this.drawNodeText(ctx, element.DisplayText, nodelength, 35, color);
         }
@@ -354,17 +367,17 @@ export class TrackChartComponent implements OnInit {
 
   drawNodeText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, color: string = null): void {
     color = color === null ? this.textColor : color;
-    this.drawTextAS(ctx, text, '16px ' + TrackChartComponent.config.Font, color, x, y);
+    this.drawTextAS(ctx, text, '16px ' + this.config.Font, color, x, y);
   }
   drawChildNodeText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number): void {
-    this.drawTextAS(ctx, text, '13px ' + TrackChartComponent.config.Font, this.textColor, x, y);
+    this.drawTextAS(ctx, text, '13px ' + this.config.Font, this.textColor, x, y);
   }
 
   drawNodeTitle(ctx: CanvasRenderingContext2D, text: string, x: number, y: number): void {
-    this.drawTitleAS(ctx, text, '13px ' + TrackChartComponent.config.Font, this.titleColor, x, y);
+    this.drawTitleAS(ctx, text, '13px ' + this.config.Font, this.titleColor, x, y);
   }
   drawChildNodeTitle(ctx: CanvasRenderingContext2D, text: string, x: number, y: number): void {
-    this.drawChildTitleAS(ctx, text, '10px ' + TrackChartComponent.config.Font, this.titleColor, x, y);
+    this.drawChildTitleAS(ctx, text, '10px ' + this.config.Font, this.titleColor, x, y);
   }
 
   drawTextAS(ctx: CanvasRenderingContext2D, text: string, font: string, color: string, x: number, y: number): void {

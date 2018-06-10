@@ -32,6 +32,7 @@ export class TrackChart {
       Link: 'http://google.com'
     } as Alert,
   };
+  Config: TrackChartConfig = new TrackChartConfig();
   Count(): number {
     return this.Nodes.length;
   };
@@ -59,6 +60,16 @@ export class Node {
   };
 
 }
+
+export class TrackChartConfig {
+  FillColor: string = "";
+  UnFillColor: string = "";
+  UnFillNodeColor: string = "";
+  TextColor: string = "";
+  TitleColor: string = "";
+  Font: string = "";
+}
+
 
 export enum NodeType {
   Start,

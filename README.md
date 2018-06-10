@@ -11,7 +11,7 @@ To install this library, run:
 $ npm install track-chart --save
 ```
 
-## Consuming your library
+## Consuming the library
 
 Once you have installed the library, you can import Track-Chart library in your application 
 through your Angular `AppModule`:
@@ -33,7 +33,14 @@ import { TrackChartModule,TrackChartConfig } from 'track-chart';
     BrowserModule,
 
     // Specify your library as an import
-    TrackChartModule,
+    TrackChartModule.forRoot({
+      FillColor: "rgb(68, 64, 60)",
+      TextColor: "#ffffff",
+      TitleColor: "#356066",
+      UnFillColor: '#dddddd',
+      UnFillNodeColor: "#ffffff",
+      Font: "Times"
+    } as TrackChartConfig),
     LibraryModule
   ],
   providers: [],
@@ -43,6 +50,40 @@ export class AppModule { }
 ```
 
 Once library is imported, you can use its components, directives and pipes in your Angular application:
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { TrackChart, TrackChartConfig } from 'track-chart';
+import { SimpleModel } from './trackchart.simple.const';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent implements OnInit {
+  chartModel: TrackChart = SimpleModel;
+  title = 'Simple Tracking!';
+
+  ngOnInit() {
+    const config: TrackChartConfig = new TrackChartConfig();
+    config.FillColor = 'rgba(40, 59, 65, 0.71)';
+    config.TextColor = '#ffffff';
+    config.TitleColor = '#356066';
+    config.UnFillColor = '#dddddd';
+    config.UnFillNodeColor = '#ffffff';
+    config.Font = 'Times';
+    this.chartModel.Config = config;
+    //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
+    //Add 'implements OnInit' to the class.
+
+  }
+}
+
+
+
+
+```
 
 ```xml
 <!-- You can now use your library component in app.component.html -->
@@ -60,18 +101,20 @@ import { TrackChart, DisplayType, Node, NodeType } from 'track-project';
 export const SimpleModel = {
     StartNode: true,
     EndNode: true,
-    CurrentState: "End",
+    CurrentState: "",
     ChildState: "",
     Nodes: [
         {
             Name: "One",
             Title: "One",
             Type: NodeType.Start,
+            Description:"Start Node of the graph",
             Childeren: [
                 {
                     Title: "Child",
                     Name: "Child",
                     Type: NodeType.Child,
+                    Description:"Child Node of the First Node",
                     Childeren: [],
                     Display: DisplayType.Text,
                     ImageURL: "",
@@ -85,6 +128,7 @@ export const SimpleModel = {
         {
             Name: "End",
             Title: "End",
+            Description:"End Node of the graph.",
             Type: NodeType.End,
             Childeren: [],
             Display: DisplayType.Text,
