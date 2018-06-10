@@ -90,7 +90,7 @@ export class AppComponent implements OnInit {
 <h1>
   {{title}}
 </h1>
-<trackChartComponent [model]="chartModel"></trackChartComponent>
+<track-chart [model]="chartModel"></track-chart>
 ```
 chartModel is a public variable of AppComponent of type "TrackChart" with property as below.
 
